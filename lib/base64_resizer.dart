@@ -1,13 +1,11 @@
+import 'dart:typed_data';
 
-import 'dart:async';
+export 'dynamic_library_loader.dart';
+export 'image_base64_resizer.dart';
+export 'image_base64_resizer_native_library.dart';
 
-import 'package:flutter/services.dart';
+abstract class Base64Resizer {
+  Uint8List resizeWithPercent(String b64, int percent);
 
-class Base64Resizer {
-  static const MethodChannel _channel = MethodChannel('base64_resizer');
-
-  static Future<String?> get platformVersion async {
-    final String? version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
-  }
+  Uint8List resizeWithSize(String b64, int width, int height);
 }

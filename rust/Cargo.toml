@@ -1,0 +1,23 @@
+[package]
+name = "resizer"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at
+# https://doc.rust-lang.org/cargo/reference/manifest.html
+# https://rust-lang.github.io/rfcs/1510-cdylib.html
+# https://yimingjing.com/papers/rustfest_rome_2018.pdf
+
+[lib]
+name = "base64_resizer"
+crate-type = ["staticlib"]
+
+[dependencies]
+fast_image_resize = "0.8.0"
+photon-rs = "0.3.1"
+image = "0.24.1"
+safer-ffi = { version = "*", features = ["proc_macros"] }
+#flutter_rust_bridge = "1.23.0"
+
+[features]
+c-headers = ["safer-ffi/headers"]
