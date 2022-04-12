@@ -32,8 +32,7 @@ pub extern fn resize_image_with_size(base64: *const c_char, width: u32, height: 
     return resize_image(base64, width, height, 0);
 }
 
-#[ffi_export]
-pub extern fn resize_image(base64: *const c_char, custom_width: u32, custom_height: u32, percent: u32) -> repr_c::Vec<u8> {
+fn resize_image(base64: *const c_char, custom_width: u32, custom_height: u32, percent: u32) -> repr_c::Vec<u8> {
     // Convert c_char to &str
     let c_str = unsafe {
         CStr::from_ptr(base64)
@@ -50,8 +49,8 @@ pub extern fn resize_image(base64: *const c_char, custom_width: u32, custom_heig
     let im = photon_rs::base64_to_image(recipient);
     let src_w = im.get_width();
     let src_h = im.get_height();
-    let width = NonZeroU32::new(src_w).unwrap();
-    let height = NonZeroU32::new(src_h).unwrap();
+    let width = NonZeroU32::new(im.get_width()).unwrap();
+    let height = NonZeroU32::new(im.get_height()).unwrap();
 
     // Create source image
     let src_image = fr::Image::from_vec_u8(
@@ -65,10 +64,10 @@ pub extern fn resize_image(base64: *const c_char, custom_width: u32, custom_heig
     let mut dst_w = custom_width;
     let mut dst_h = custom_height;
     if percent > 0 {
-        let percent_w = src_w * percent / 100;
-        let percent_h = src_h * percent / 100;
-        dst_w = src_w - percent_w;
-        dst_h = src_h - percent_h;
+        let percent_w = calc_percent(&src_w, &percent);
+        let percent_h = calc_percent(&src_h, &percent);
+        dst_w = calc_dif(&src_w, &percent_w);
+        dst_h = calc_dif(&src_h, &percent_h);
     }
 
     let dst_width = NonZeroU32::new(dst_w).unwrap();
@@ -94,6 +93,14 @@ pub extern fn resize_image(base64: *const c_char, custom_width: u32, custom_heig
     return png;
 }
 
+fn calc_dif(org: &u32, dif: &u32) -> u32 {
+    org - dif
+}
+
+fn calc_percent(size: &u32, percent: &u32) -> u32 {
+    size * percent / 100
+}
+
 fn create_png(pixels: &[u8], dimensions: (u32, u32)) -> repr_c::Vec<u8> {
     let mut png_buffer = Vec::new();
     PngEncoder::new(png_buffer.by_ref())
@@ -102,9 +109,21 @@ fn create_png(pixels: &[u8], dimensions: (u32, u32)) -> repr_c::Vec<u8> {
             dimensions.0,
             dimensions.1,
             ColorType::Rgba8,
-        ).expect("error encoding pixels as PNG");
+        ).expect("Error encoding pixels as PNG");
 
     png_buffer.into()
+}
+
+#[ffi_export]
+pub extern fn to_string(to: *const c_char) -> *mut c_char {
+    let c_str = unsafe {
+        CStr::from_ptr(to)
+    };
+    let recipient = match c_str.to_str() {
+        Err(_) => "",
+        Ok(string) => string,
+    };
+    CString::new(recipient).unwrap().into_raw()
 }
 
 /// The following test function is necessary for the header generation.

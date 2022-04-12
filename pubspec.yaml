@@ -21,7 +21,7 @@ dev_dependencies:
 ffigen:
   name: ImageBase64ResizerNativeLibrary
   description: Bindings to `ios/Classes/base64_resizer.h`.
-  output: 'lib/image_base64_resizer_native_library.dart'
+  output: 'lib/binding/image_base64_resizer_native_library.dart'
   headers:
     entry-points:
       - 'ios/Classes/base64_resizer.h'

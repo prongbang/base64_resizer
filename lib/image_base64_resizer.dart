@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:base64_resizer/base64_resizer.dart';
 import 'package:base64_resizer/extensions/extensions.dart';
+import 'package:ffi/ffi.dart';
 
 class ImageBase64Resizer implements Base64Resizer {
   final _imageBase64Resizer = ImageBase64ResizerNativeLibrary(Platform.isAndroid
@@ -13,13 +14,29 @@ class ImageBase64Resizer implements Base64Resizer {
   @override
   Uint8List resizeWithPercent(String b64, int percent) {
     try {
-      final b64Ptr = b64.toPointerInt8();
-      final result =
+      final Pointer<Int8> b64Ptr = b64.toPointerInt8();
+      final Vec_uint8_t result =
           _imageBase64Resizer.resize_image_with_percent(b64Ptr, percent);
-      final list = result.ptr.asTypedList(result.len);
+      print('len: ${result.len}');
+      print('cap: ${result.cap}');
+      print('ptr: ${result.ptr.address}');
+      final Uint8List list = result.ptr.asTypedList(result.len);
+      return list;
+    } catch (e) {
+      print('error:: $e');
+      return Uint8List(0);
+    }
+  }
+
+  @override
+  Uint8List resizeWithSize(String b64, int width, int height) {
+    try {
+      final Pointer<Int8> b64Ptr = b64.toPointerInt8();
+      final Vec_uint8_t result =
+          _imageBase64Resizer.resize_image_with_size(b64Ptr, width, height);
+      final Uint8List list = result.ptr.asTypedList(result.len);
 
       // Free memory
-      _imageBase64Resizer.free_buf(result);
       _imageBase64Resizer.free_string(b64Ptr);
 
       return list;
@@ -28,21 +45,15 @@ class ImageBase64Resizer implements Base64Resizer {
     }
   }
 
-  @override
-  Uint8List resizeWithSize(String b64, int width, int height) {
-    try {
-      final b64Ptr = b64.toPointerInt8();
-      final result =
-          _imageBase64Resizer.resize_image_with_size(b64Ptr, width, height);
-      final list = result.ptr.asTypedList(result.len);
+  String rustGreeting() {
+    const nameStr = "John Smith";
+    final Pointer<Int8> namePtr = nameStr.toNativeUtf8().cast<Int8>();
 
-      // Free memory
-      _imageBase64Resizer.free_buf(result);
-      _imageBase64Resizer.free_string(b64Ptr);
+    final Pointer<Int8> resultPtr = _imageBase64Resizer.to_string(namePtr);
 
-      return list;
-    } catch (_) {
-      return Uint8List(0);
-    }
+    // Handle the result pointer
+    final String greetingStr = resultPtr.cast<Utf8>().toDartString();
+
+    return greetingStr;
   }
 }

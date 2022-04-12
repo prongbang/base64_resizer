@@ -81,26 +81,19 @@ class ImageBase64ResizerNativeLibrary {
   late final _resize_image_with_size = _resize_image_with_sizePtr
       .asFunction<Vec_uint8_t Function(ffi.Pointer<ffi.Int8>, int, int)>();
 
-  Vec_uint8_t resize_image(
-    ffi.Pointer<ffi.Int8> base64,
-    int custom_width,
-    int custom_height,
-    int percent,
+  ffi.Pointer<ffi.Int8> to_string(
+    ffi.Pointer<ffi.Int8> to,
   ) {
-    return _resize_image(
-      base64,
-      custom_width,
-      custom_height,
-      percent,
+    return _to_string(
+      to,
     );
   }
 
-  late final _resize_imagePtr = _lookup<
+  late final _to_stringPtr = _lookup<
       ffi.NativeFunction<
-          Vec_uint8_t Function(ffi.Pointer<ffi.Int8>, ffi.Uint32, ffi.Uint32,
-              ffi.Uint32)>>('resize_image');
-  late final _resize_image = _resize_imagePtr
-      .asFunction<Vec_uint8_t Function(ffi.Pointer<ffi.Int8>, int, int, int)>();
+          ffi.Pointer<ffi.Int8> Function(ffi.Pointer<ffi.Int8>)>>('to_string');
+  late final _to_string = _to_stringPtr
+      .asFunction<ffi.Pointer<ffi.Int8> Function(ffi.Pointer<ffi.Int8>)>();
 }
 
 class __mbstate_t extends ffi.Union {

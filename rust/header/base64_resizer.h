@@ -46,11 +46,8 @@ Vec_uint8_t resize_image_with_size (
     uint32_t width,
     uint32_t height);
 
-Vec_uint8_t resize_image (
-    int8_t const * base64,
-    uint32_t custom_width,
-    uint32_t custom_height,
-    uint32_t percent);
+int8_t * to_string (
+    int8_t const * to);
 
 
 #ifdef __cplusplus
