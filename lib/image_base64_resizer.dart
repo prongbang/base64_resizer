@@ -4,23 +4,27 @@ import 'dart:typed_data';
 
 import 'package:base64_resizer/base64_resizer.dart';
 import 'package:base64_resizer/extensions/extensions.dart';
-import 'package:ffi/ffi.dart';
 
 class ImageBase64Resizer implements Base64Resizer {
-  final _imageBase64Resizer = ImageBase64ResizerNativeLibrary(Platform.isAndroid
+  final _dynamicLibrary = Platform.isAndroid
       ? DynamicLibrary.open('libbase64_resizer.so')
-      : DynamicLibrary.process());
+      : DynamicLibrary.process();
 
   @override
-  Uint8List resizeWithPercent(String b64, int percent) {
+  Future<Uint8List> resizeWithPercent(String b64, int percent) async {
+    final imageBase64Resizer = ImageBase64ResizerNativeLibrary(_dynamicLibrary);
     try {
       final Pointer<Int8> b64Ptr = b64.toPointerInt8();
       final Vec_uint8_t result =
-          _imageBase64Resizer.resize_image_with_percent(b64Ptr, percent);
+          imageBase64Resizer.resize_image_with_percent(b64Ptr, percent);
       print('len: ${result.len}');
       print('cap: ${result.cap}');
       print('ptr: ${result.ptr.address}');
       final Uint8List list = result.ptr.asTypedList(result.len);
+
+      imageBase64Resizer.free_buf(result);
+      imageBase64Resizer.free_string(b64Ptr);
+
       return list;
     } catch (e) {
       print('error:: $e');
@@ -29,15 +33,16 @@ class ImageBase64Resizer implements Base64Resizer {
   }
 
   @override
-  Uint8List resizeWithSize(String b64, int width, int height) {
+  Future<Uint8List> resizeWithSize(String b64, int width, int height) async {
+    final imageBase64Resizer = ImageBase64ResizerNativeLibrary(_dynamicLibrary);
     try {
       final Pointer<Int8> b64Ptr = b64.toPointerInt8();
       final Vec_uint8_t result =
-          _imageBase64Resizer.resize_image_with_size(b64Ptr, width, height);
+          imageBase64Resizer.resize_image_with_size(b64Ptr, width, height);
       final Uint8List list = result.ptr.asTypedList(result.len);
 
       // Free memory
-      _imageBase64Resizer.free_string(b64Ptr);
+      imageBase64Resizer.free_string(b64Ptr);
 
       return list;
     } catch (_) {
@@ -45,14 +50,17 @@ class ImageBase64Resizer implements Base64Resizer {
     }
   }
 
-  String rustGreeting() {
+  Future<String> rustGreeting() async {
+    final imageBase64Resizer = ImageBase64ResizerNativeLibrary(_dynamicLibrary);
     const nameStr = "John Smith";
-    final Pointer<Int8> namePtr = nameStr.toNativeUtf8().cast<Int8>();
+    final Pointer<Int8> namePtr = nameStr.toPointerInt8();
 
-    final Pointer<Int8> resultPtr = _imageBase64Resizer.to_string(namePtr);
+    final Pointer<Int8> resultPtr = imageBase64Resizer.to_string(namePtr);
 
     // Handle the result pointer
-    final String greetingStr = resultPtr.cast<Utf8>().toDartString();
+    final String greetingStr = resultPtr.toDartString();
+
+    imageBase64Resizer.free_string(resultPtr);
 
     return greetingStr;
   }

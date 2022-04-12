@@ -30,31 +30,47 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Image Base64 Rsizeer'),
         ),
-        body: Row(
-          children: [
-            Expanded(
-              child: ListView.builder(
+        body: FutureBuilder<List<Uint8List>>(
+          future: _getImageList(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final data = snapshot.data!;
+              return ListView.builder(
                 itemCount: 1,
-                itemBuilder: (context, index) => _buildItem(index),
-              ),
-            ),
-          ],
+                itemBuilder: (context, index) {
+                  final item = data[index];
+                  return _buildItem(item, index);
+                },
+              );
+            }
+            return const CircularProgressIndicator();
+          },
         ),
       ),
     );
   }
 
-  Widget _buildItem(int index) {
-    final result = _imageBase64Resizer.rustGreeting();
-    print('result: $result');
-    final Uint8List bytes =
-        _imageBase64Resizer.resizeWithPercent(ImageData.base64, 50);
-    print('bytes: $bytes');
-    return Column(
-      children: [
-        Image.memory(bytes),
-        Text('Text: $index'),
-      ],
+  Widget _buildItem(Uint8List bytes, int index) {
+    return Card(
+      child: Column(
+        children: [
+          Image.memory(bytes),
+          Text('Text: $index'),
+        ],
+      ),
     );
+  }
+
+  Future<List<Uint8List>> _getImageList() async {
+    // final result = await _imageBase64Resizer.rustGreeting();
+    // print(result);
+
+    final Uint8List bytes1 =
+        await _imageBase64Resizer.resizeWithPercent(ImageData.base64, 50);
+    print('bytes: $bytes1');
+
+    return [
+      bytes1,
+    ];
   }
 }
