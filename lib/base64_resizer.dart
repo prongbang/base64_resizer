@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
-export 'dynamic_library_loader.dart';
+export 'binding/image_base64_resizer_native_library.dart';
 export 'image_base64_resizer.dart';
-export 'image_base64_resizer_native_library.dart';
+export 'loader/dynamic_library_loader.dart';
 
 abstract class Base64Resizer {
   Uint8List resizeWithPercent(String b64, int percent);
