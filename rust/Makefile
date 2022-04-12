@@ -9,7 +9,8 @@ gen_a:
 	cp ./target/universal/release/libbase64_resizer.a ./lipo
 
 gen_so:
-	cargo ndk -t armeabi-v7a -t arm64-v8a -t x86 -o ./jniLibs build --release
+	# Android Plugin for Gradle 3.1.0 and higher no longer generate APKs for the following ABIs by default: mips, mips64, and armeabi.
+	cargo ndk -t armeabi-v7a -t arm64-v8a -t x86 -t x86_64 -t arm64-v8a -o ./jniLibs build --release
 	cp -a ./jniLibs ../android/src/main
 
 

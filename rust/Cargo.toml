@@ -10,7 +10,7 @@ edition = "2021"
 
 [lib]
 name = "base64_resizer"
-crate-type = ["staticlib"]
+crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
 fast_image_resize = "0.8.0"
